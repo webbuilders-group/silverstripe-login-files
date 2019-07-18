@@ -41,9 +41,15 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
         if ($this->config()->redirect_protected && !$public->has($asset) && !$protected->has($asset) && $redirectUrl = $this->_searchForEquivalentFileID($asset)) {
             if ($redirectUrl != $asset && ($public->has($redirectUrl) || $protected->has($redirectUrl))) {
                 $response = new HTTPResponse(null, $this->config()->get('redirect_response_code'));
-                /** @var PublicAdapter $adapter */
-                $adapter = $this->getPublicFilesystem()->getAdapter();
-                $response->addHeader('Location', $adapter->getPublicUrl($redirectUrl));
+                if ($public->has($redirectUrl)) {
+                    /** @var \SilverStripe\Assets\Flysystem\PublicAdapter $adapter */
+                    $adapter = $this->getPublicFilesystem()->getAdapter();
+                    $response->addHeader('Location', $adapter->getPublicUrl($redirectUrl));
+                } else {
+                    /** @var \SilverStripe\Assets\Flysystem\ProtectedAdapter $adapter */
+                    $adapter = $this->getProtectedFilesystem()->getAdapter();
+                    $response->addHeader('Location', $adapter->getProtectedUrl($redirectUrl));
+                }
                 
                 return $response;
             } else {
