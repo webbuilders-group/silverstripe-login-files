@@ -38,7 +38,7 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
         }
         
         // If we found a URL to redirect to that is protected
-        if ($this->config()->redirect_protected && !$public->has($asset) && !$protected->has($asset) && $redirectUrl = $this->searchForEquivalentFileID($asset)) {
+        if ($this->config()->redirect_protected && !$public->has($asset) && !$protected->has($asset) && $redirectUrl = $this->_searchForEquivalentFileID($asset)) {
             if ($redirectUrl != $asset && ($public->has($redirectUrl) || $protected->has($redirectUrl))) {
                 $response = new HTTPResponse(null, $this->config()->get('redirect_response_code'));
                 /** @var PublicAdapter $adapter */
@@ -60,7 +60,7 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
      * @param string $asset
      * @return string
      */
-    private function searchForEquivalentFileID($asset)
+    private function _searchForEquivalentFileID($asset)
     {
         // If File is not versionable, let's bail
         if (!class_exists(Versioned::class) || !File::has_extension(Versioned::class)) {
@@ -94,7 +94,7 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
         }
 
         // Let's see if $asset is a legacy URL that can be map to a current file
-        $parsedFileID = $this->parseLegacyFileID($asset);
+        $parsedFileID = $this->_parseLegacyFileID($asset);
         if ($parsedFileID) {
             $filename = $parsedFileID['Filename'];
             $variant = $parsedFileID['Variant'];
@@ -118,7 +118,7 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
      * @param string $fileID
      * @return array
      */
-    private function parseLegacyFileID($fileID)
+    private function _parseLegacyFileID($fileID)
     {
         // assets/folder/_resampled/ResizedImageWzEwMCwxMzNd/basename.extension
         $ss3Pattern = '#^(?<folder>([^/]+/)*?)(_resampled/(?<variant>([^/.]+))/)?((?<basename>((?<!__)[^/.])+))(?<extension>(\..+)*)$#';
