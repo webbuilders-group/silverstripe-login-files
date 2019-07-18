@@ -1,0 +1,8 @@
+---
+Name: loginfiles
+After:
+    - "#assetscore"
+---
+SilverStripe\Core\Injector\Injector:
+    SilverStripe\Assets\Storage\AssetStore:
+        class: 'WebbuildersGroup\LoginFiles\Flysystem\FlysystemAssetStore'
