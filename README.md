@@ -8,10 +8,18 @@ Changes how assets in SilverStripe 4.x that require a logged in user are handled
 
 ## Requirements
 * SilverStripe Framework 4.3+
+* SilverStripe Assets 1.3+
 
 
 ## Installation
-__Composer (recommended):__
 ```
 composer require webbuilders-group/silverstripe-login-files
+```
+
+## Configuration
+By default this module will also redirect protected files when they are either missing their hash (for example a legacy url) or when the hash is out of date, this can be turned off by adding the following to your yaml configuration:
+
+```yml
+WebbuildersGroup\LoginFiles\Flysystem\FlysystemAssetStore:
+    redirect_protected: false
 ```
