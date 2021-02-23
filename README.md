@@ -7,8 +7,7 @@ Changes how assets in SilverStripe 4.x that require a logged in user are handled
 
 
 ## Requirements
-* SilverStripe Framework 4.3+
-* SilverStripe Assets 1.3+
+* SilverStripe Assets 1.4+
 
 
 ## Installation

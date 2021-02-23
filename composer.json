@@ -14,7 +14,7 @@
 		}
 	],
 	"require" : {
-		"silverstripe/assets" : "~1.3"
+		"silverstripe/assets" : "~1.4"
 	},
 	"support" : {
 		"issues" : "https://github.com/webbuilders-group/silverstripe-login-files/issues"

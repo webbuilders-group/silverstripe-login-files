@@ -18,15 +18,16 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
      * @default true
      */
     private static $redirect_protected = true;
-    
+
     public function getResponseFor($asset)
     {
         $public = $this->getPublicFilesystem();
         $protected = $this->getProtectedFilesystem();
-        
+
         // If the file exists in the protected store and the user has been explicitely granted access to it
         if (!$public->has($asset) && $protected->has($asset) && !$this->isGranted($asset)) {
-            $parsedFileID = $this->parseFileID($asset);
+            $parsedFileID = $this->getProtectedResolutionStrategy()->parseFileID($asset);
+            $parsedFileID = ($parsedFileID ? $parsedFileID->getTuple() : null);
             if ($parsedFileID && ($file = File::get()->filter(['FileFilename' => $parsedFileID['Filename']])->first()) && $file->isPublished()) {
                 if ($file->canView()) {
                     //There was no grant present but the user can view the published file
@@ -36,7 +37,7 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
                 }
             }
         }
-        
+
         // If we found a URL to redirect to that is protected
         if ($this->config()->redirect_protected && !$public->has($asset) && !$protected->has($asset) && $redirectUrl = $this->_searchForEquivalentFileID($asset)) {
             if ($redirectUrl != $asset && ($public->has($redirectUrl) || $protected->has($redirectUrl))) {
@@ -50,14 +51,14 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
                     $adapter = $this->getProtectedFilesystem()->getAdapter();
                     $response->addHeader('Location', $adapter->getProtectedUrl($redirectUrl));
                 }
-                
+
                 return $response;
             } else {
                 // Something weird is going on e.g. a publish file without a physical file
                 return $this->createMissingResponse();
             }
         }
-        
+
         return parent::getResponseFor($asset);
     }
 
@@ -73,7 +74,8 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
             return '';
         }
 
-        $parsedFileID = $this->parseFileID($asset);
+        $parsedFileID = $this->getProtectedResolutionStrategy()->parseFileID($asset);
+        $parsedFileID = ($parsedFileID ? $parsedFileID->getTuple() : null);
         if ($parsedFileID && $parsedFileID['Hash']) {
             // Try to find a live version of this file
             $stage = Versioned::get_stage();
@@ -117,7 +119,7 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
 
         return '';
     }
-    
+
     /**
      * Try to parse a file ID using the old SilverStripe 3 format legacy or the SS4 legacy filename format.
      *
@@ -130,13 +132,13 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
         $ss3Pattern = '#^(?<folder>([^/]+/)*?)(_resampled/(?<variant>([^/.]+))/)?((?<basename>((?<!__)[^/.])+))(?<extension>(\..+)*)$#';
         // assets/folder/basename__ResizedImageWzEwMCwxMzNd.extension
         $ss4LegacyPattern = '#^(?<folder>([^/]+/)*)(?<basename>((?<!__)[^/.])+)(__(?<variant>[^.]+))?(?<extension>(\..+)*)$#';
-        
+
         // not a valid file (or not a part of the filesystem)
         $matches = [];
         if (!preg_match($ss3Pattern, $fileID, $matches) && !preg_match($ss4LegacyPattern, $fileID, $matches)) {
             return null;
         }
-        
+
         $filename = $matches['folder'] . $matches['basename'] . $matches['extension'];
         $variant = isset($matches['variant']) ? $matches['variant'] : null;
         return [
