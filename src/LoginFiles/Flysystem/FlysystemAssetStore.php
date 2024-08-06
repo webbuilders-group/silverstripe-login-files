@@ -2,9 +2,12 @@
 namespace WebbuildersGroup\LoginFiles\Flysystem;
 
 use SilverStripe\Assets\Flysystem\FlysystemAssetStore as SS_FlysystemAssetStore;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPResponse;
+use SilverStripe\LoginForms\EnablerExtension;
 use SilverStripe\Security\Security;
+use SilverStripe\View\SSViewer;
 
 class FlysystemAssetStore extends SS_FlysystemAssetStore
 {
@@ -21,6 +24,11 @@ class FlysystemAssetStore extends SS_FlysystemAssetStore
      */
     public function createDeniedResponse()
     {
+        // If silverstripe/login-forms is installed ensure we bootstrap it's theme
+        if (class_exists(EnablerExtension::class)) {
+            SSViewer::set_themes(Config::inst()->get(EnablerExtension::class, 'login_themes'));
+        }
+
         return Security::permissionFailure(Controller::curr());
     }
 
