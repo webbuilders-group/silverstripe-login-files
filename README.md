@@ -20,5 +20,5 @@ By default this module will also redirect protected files when they are either m
 
 ```yml
 WebbuildersGroup\LoginFiles\Flysystem\FlysystemAssetStore:
-    redirect_protected: false
+  redirect_protected: false
 ```
